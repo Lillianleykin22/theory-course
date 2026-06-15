@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תיאוריה חכמה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c26;
+  --border: rgba(255,255,255,0.08); --accent: #6c63ff; --accent2: #ff6584;
+  --text: #f0f0f8; --muted: #8888aa;
+  --success: #4ade80; --warning: #fbbf24; --danger: #f87171;
+  --radius: 14px; --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+body::before {
+  content: ''; position: fixed; top: -200px; right: -200px; width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(108,99,255,0.1) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.screen { display: none; min-height: 100vh; flex-direction: column; position: relative; z-index: 1; }
+.screen.active { display: flex; }
+
+/* NAV */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem; border-bottom: 1px solid var(--border);
+  background: rgba(10,10,15,0.9); backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px;
+}
+.nav-links { display: flex; gap: 20px; }
+.nav-link { font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: none; transition: color 0.2s; }
+.nav-link:hover, .nav-link.active { color: var(--text); }
+
+/* BUTTONS */
+.btn { padding: 12px 28px; border-radius: var(--radius-sm); font-size: 15px; font-family: 'Heebo', sans-serif; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #8b83ff); color: white; box-shadow: 0 4px 20px rgba(108,99,255,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--surface2); }
+.btn-sm { padding: 8px 18px; font-size: 13px; }
+
+/* PAGE */
+.page-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1.5rem; max-width: 700px; margin: 0 auto; width: 100%; }
+.page-title { font-size: 22px; font-weight: 700; margin-bottom: 0.5rem; text-align: center; }
+.page-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 2rem; text-align: center; }
+
+/* PROGRESS */
+.progress-wrap { width: 100%; background: var(--surface); border-radius: 20px; height: 6px; margin-bottom: 1.25rem; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 20px; transition: width 0.4s ease; }
+.q-counter { font-size: 12px; color: var(--muted); margin-bottom: 1.5rem; align-self: flex-start; }
+
+/* QUESTION */
+.q-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem; width: 100%; margin-bottom: 1.25rem; }
+.q-topic { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+.q-text { font-size: 17px; font-weight: 500; line-height: 1.6; }
+
+/* ANSWERS */
+.answers { display: flex; flex-direction: column; gap: 9px; width: 100%; }
+.ans-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 13px 18px; text-align: right; font-size: 14px; font-family: 'Heebo', sans-serif;
+  color: var(--text); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px;
+}
+.ans-btn:hover:not(:disabled) { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.07); }
+.ans-btn.correct { border-color: var(--success); background: rgba(74,222,128,0.08); color: var(--success); }
+.ans-btn.wrong { border-color: var(--danger); background: rgba(248,113,113,0.08); color: var(--danger); }
+.ans-btn:disabled { cursor: not-allowed; }
+.ans-letter { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+/* AI BOX */
+.ai-box { background: rgba(108,99,255,0.07); border: 1px solid rgba(108,99,255,0.2); border-radius: var(--radius); padding: 1.25rem 1.5rem; width: 100%; margin-top: 0.5rem; display: none; animation: fadeUp 0.3s ease; }
+.ai-box.show { display: block; }
+.ai-label { font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
+.ai-text { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(108,99,255,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
+.next-btn-wrap { width: 100%; display: flex; justify-content: flex-end; margin-top: 1rem; }
+
+/* AI GENERATING */
+.ai-generating {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 2rem; width: 100%; text-align: center; margin-bottom: 1.25rem;
+}
+.ai-generating p { color: var(--muted); font-size: 14px; margin-top: 1rem; }
+
+/* LEARN */
+.learn-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; width: 100%; margin-bottom: 1.5rem; }
+.learn-topic-badge { display: inline-block; background: rgba(108,99,255,0.15); color: #a8a3ff; font-size: 12px; padding: 4px 12px; border-radius: 20px; margin-bottom: 1.25rem; }
+.learn-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 1rem; }
+.learn-card p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 1rem; }
+.rule-box { background: rgba(108,99,255,0.08); border-right: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 1rem 1.25rem; margin: 1rem 0; }
+.rule-box p { color: var(--text); font-size: 14px; margin: 0; }
+.example-box { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2); border-radius: var(--radius-sm); padding: 1rem 1.25rem; margin-top: 1rem; }
+.example-label { font-size: 11px; color: var(--success); font-weight: 700; margin-bottom: 0.5rem; }
+.example-box p { color: var(--muted); font-size: 14px; margin: 0; }
+
+/* RESULTS */
+.results-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1.5rem; max-width: 700px; margin: 0 auto; width: 100%; text-align: center; }
+.score-ring { width: 130px; height: 130px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.75rem; position: relative; }
+.score-ring svg { position: absolute; top: 0; right: 0; transform: rotate(-90deg); }
+.score-inner { display: flex; flex-direction: column; align-items: center; }
+.score-big { font-size: 30px; font-weight: 900; }
+.score-small { font-size: 12px; color: var(--muted); }
+.results-title { font-size: 24px; font-weight: 700; margin-bottom: 0.5rem; }
+.results-sub { font-size: 14px; color: var(--muted); margin-bottom: 2rem; }
+.topics-list { width: 100%; display: flex; flex-direction: column; gap: 9px; margin-bottom: 2rem; text-align: right; }
+.topic-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 16px; }
+.topic-name { flex: 1; font-size: 14px; }
+.topic-bar-bg { width: 90px; height: 5px; background: var(--surface2); border-radius: 10px; overflow: hidden; }
+.topic-bar { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+.topic-pct { font-size: 13px; font-weight: 600; min-width: 38px; text-align: center; }
+.roadmap { width: 100%; text-align: right; margin-bottom: 2rem; }
+.roadmap h3 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; color: var(--muted); }
+.roadmap-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 8px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; transition: border-color 0.2s; }
+.roadmap-item:hover { border-color: rgba(108,99,255,0.3); }
+.roadmap-item.priority { border-color: rgba(255,101,132,0.3); background: rgba(255,101,132,0.05); }
+.roadmap-item.ok { border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.04); }
+.rm-icon { font-size: 18px; flex-shrink: 0; }
+.rm-info { flex: 1; }
+.rm-name { font-size: 14px; font-weight: 500; }
+.rm-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.rm-badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+.rm-badge.need { background: rgba(255,101,132,0.15); color: var(--accent2); }
+.rm-badge.good { background: rgba(74,222,128,0.12); color: var(--success); }
+
+/* LEVEL DOTS */
+.level-indicator { display: flex; gap: 8px; margin-bottom: 1.5rem; align-self: flex-start; flex-wrap: wrap; }
+.level-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* HOME */
+.hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 3rem 2rem; }
+.badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); color: #a8a3ff; font-size: 12px; padding: 5px 14px; border-radius: 20px; margin-bottom: 1.75rem; animation: fadeUp 0.5s ease both; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.15; margin-bottom: 1.25rem; animation: fadeUp 0.5s ease 0.1s both; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero p { font-size: 17px; color: var(--muted); max-width: 460px; line-height: 1.7; margin-bottom: 2.5rem; animation: fadeUp 0.5s ease 0.2s both; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.5s ease 0.3s both; margin-bottom: 3rem; }
+.how-it-works { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 860px; width: 100%; animation: fadeUp 0.5s ease 0.4s both; }
+.step-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; flex: 1; min-width: 130px; max-width: 160px; text-align: center; transition: border-color 0.2s, transform 0.2s; }
+.step-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-3px); }
+.step-num { width: 30px; height: 30px; border-radius: 50%; background: rgba(108,99,255,0.15); color: #a8a3ff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.65rem; }
+.step-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.step-card p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* PROFILE */
+.profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; margin-bottom: 1.5rem; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center; }
+.stat-icon { font-size: 24px; margin-bottom: 0.5rem; }
+.stat-val { font-size: 26px; font-weight: 900; }
+.stat-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.streak-bar { display: flex; gap: 6px; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap; }
+.streak-day { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+.streak-day.done { background: rgba(108,99,255,0.3); color: #a8a3ff; }
+.streak-day.today { background: var(--accent); color: white; }
+.streak-day.miss { background: var(--surface2); color: var(--muted); }
+.history-list { width: 100%; display: flex; flex-direction: column; gap: 8px; text-align: right; }
+.history-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+.hist-icon { font-size: 20px; }
+.hist-info { flex: 1; }
+.hist-title { font-size: 14px; font-weight: 500; }
+.hist-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.hist-score { font-size: 14px; font-weight: 700; }
+
+/* TOPIC DONE */
+.done-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; max-width: 500px; margin: 0 auto; width: 100%; text-align: center; }
+.done-score-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; width: 100%; margin-bottom: 1.5rem; }
+
+/* EXAM */
+.exam-option-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 10px; width: 100%;
+}
+.exam-option-card:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+.exam-option-icon { font-size: 24px; flex-shrink: 0; }
+.exam-option-info { flex: 1; text-align: right; }
+.exam-option-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.exam-option-desc { font-size: 12px; color: var(--muted); }
+.exam-option-arrow { font-size: 16px; color: var(--muted); }
+.exam-wrong-item {
+  background: var(--surface); border: 1px solid rgba(248,113,113,0.2);
+  border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 8px; text-align: right;
+}
+.exam-wrong-q { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+.exam-wrong-correct { font-size: 12px; color: var(--success); }
+.exam-wrong-yours { font-size: 12px; color: var(--danger); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* AUTH SCREENS */
+.auth-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1.5rem; min-height: 100vh;
+}
+.auth-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2.5rem 2rem;
+  width: 100%; max-width: 420px;
+}
+.auth-logo { text-align: center; margin-bottom: 2rem; }
+.auth-logo-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin: 0 auto 0.75rem;
+}
+.auth-logo h2 { font-size: 20px; font-weight: 700; }
+.auth-logo p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.auth-tabs {
+  display: flex; background: var(--surface2); border-radius: var(--radius-sm);
+  padding: 4px; margin-bottom: 1.75rem;
+}
+.auth-tab {
+  flex: 1; padding: 9px; text-align: center; font-size: 14px; font-weight: 500;
+  border-radius: 6px; cursor: pointer; transition: all 0.2s; color: var(--muted);
+  font-family: 'Heebo', sans-serif; border: none; background: none;
+}
+.auth-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.auth-field { margin-bottom: 1rem; }
+.auth-field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.auth-input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 11px 14px;
+  font-size: 14px; font-family: 'Heebo', sans-serif; color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.auth-input:focus { border-color: rgba(108,99,255,0.5); }
+.auth-input::placeholder { color: var(--muted); }
+.auth-error {
+  background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 13px; color: var(--danger); margin-bottom: 1rem; display: none;
+}
+.auth-success {
+  background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 13px; color: var(--success); margin-bottom: 1rem; display: none;
+}
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 1.25rem 0; color: var(--muted); font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.auth-social {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.auth-social-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 11px;
+  font-size: 14px; font-family: 'Heebo', sans-serif; color: var(--text);
+  cursor: pointer; transition: all 0.2s;
+}
+.auth-social-btn:hover { border-color: rgba(255,255,255,0.2); background: var(--surface); }
+
+/* OTP */
+.otp-inputs { display: flex; gap: 10px; justify-content: center; margin: 1rem 0; }
+.otp-input {
+  width: 48px; height: 56px; text-align: center; font-size: 22px; font-weight: 700;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Heebo', sans-serif; outline: none; transition: border-color 0.2s;
+}
+.otp-input:focus { border-color: var(--accent); }
+
+/* USER BADGE IN NAV */
+.user-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 12px 5px 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.user-badge:hover { border-color: rgba(108,99,255,0.3); }
+.user-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 500; }
+
+/* ======= RESPONSIVE MOBILE ======= */
+@media (max-width: 600px) {
+  /* NAV */
+  nav { padding: 0.875rem 1rem; }
+  .logo { font-size: 15px; }
+  .nav-links { gap: 12px; }
+  .nav-link { font-size: 12px; }
+
+  /* HERO */
+  .hero { padding: 2rem 1rem; }
+  .hero p { font-size: 15px; }
+  .hero-btns { flex-direction: column; align-items: stretch; }
+  .hero-btns .btn { width: 100%; text-align: center; }
+  .step-card { min-width: 120px; max-width: 140px; padding: 0.9rem; }
+  .step-card h3 { font-size: 12px; }
+  .step-card p { font-size: 10px; }
+
+  /* PAGE */
+  .page-container { padding: 1.5rem 1rem; }
+  .page-title { font-size: 19px; }
+
+  /* BUTTONS */
+  .btn { padding: 13px 20px; font-size: 14px; }
+  .btn-sm { padding: 10px 16px; font-size: 13px; }
+
+  /* QUESTION */
+  .q-card { padding: 1.25rem; }
+  .q-text { font-size: 15px; }
+  .ans-btn { padding: 12px 14px; font-size: 13px; }
+
+  /* RESULTS */
+  .results-wrap { padding: 1.5rem 1rem; }
+  .results-title { font-size: 20px; }
+  .topic-bar-bg { width: 70px; }
+
+  /* PROFILE */
+  .profile-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-val { font-size: 22px; }
+
+  /* ROADMAP */
+  .roadmap-item { padding: 10px 12px; }
+  .rm-name { font-size: 13px; }
+
+  /* LEARN */
+  .learn-card { padding: 1.25rem; }
+  .learn-card h2 { font-size: 17px; }
+  .learn-card p { font-size: 14px; }
+
+  /* EXAM */
+  .exam-option-card { padding: 1rem 1.1rem; }
+  .exam-option-title { font-size: 14px; }
+
+  /* CHATBOT */
+  .chat-window { width: calc(100vw - 32px); left: 16px; bottom: 80px; }
+  .chat-bubble { bottom: 16px; left: 16px; width: 50px; height: 50px; font-size: 22px; }
+
+  /* DONE WRAP */
+  .done-wrap { padding: 2rem 1rem; }
+  .score-ring { width: 110px; height: 110px; }
+  .score-big { font-size: 26px; }
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH - LOGIN/REGISTER -->
+<div id="s-auth" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">🚗</div>
+        <h2>תיאוריה חכמה</h2>
+        <p>קורס אדפטיבי מבוסס AI</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">התחברות</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">הרשמה</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="form-login">
+        <div class="auth-error" id="login-error"></div>
+        <div class="auth-field">
+          <label>אימייל</label>
+          <input class="auth-input" id="login-email" type="email" placeholder="your@email.com">
+        </div>
+        <div class="auth-field">
+          <label>סיסמה</label>
+          <input class="auth-input" id="login-pass" type="password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doLogin()">התחבר</button>
+        <div class="auth-divider">או</div>
+        <div class="auth-social">
+          <button class="auth-social-btn" onclick="doSocialLogin('Google')">
+            <span style="font-size:18px">G</span> המשך עם Google
+          </button>
+          <button class="auth-social-btn" onclick="doSocialLogin('GitHub')">
+            <span style="font-size:18px">⌥</span> המשך עם GitHub
+          </button>
+        </div>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="form-register" style="display:none">
+        <div class="auth-error" id="register-error"></div>
+        <div class="auth-field">
+          <label>שם מלא</label>
+          <input class="auth-input" id="reg-name" type="text" placeholder="ישראל ישראלי">
+        </div>
+        <div class="auth-field">
+          <label>אימייל</label>
+          <input class="auth-input" id="reg-email" type="email" placeholder="your@email.com">
+        </div>
+        <div class="auth-field">
+          <label>סיסמה (לפחות 6 תווים)</label>
+          <input class="auth-input" id="reg-pass" type="password" placeholder="••••••••">
+        </div>
+        <div class="auth-field">
+          <label>אימות סיסמה</label>
+          <input class="auth-input" id="reg-pass2" type="password" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter')doRegister()">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doRegister()">צור חשבון</button>
+        <div class="auth-divider">או</div>
+        <div class="auth-social">
+          <button class="auth-social-btn" onclick="doSocialLogin('Google')">
+            <span style="font-size:18px">G</span> הרשמה עם Google
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OTP SCREEN -->
+<div id="s-otp" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div style="font-size:48px;margin-bottom:0.75rem">📧</div>
+        <h2>אימות אימייל</h2>
+        <p id="otp-subtitle">שלחנו קוד לאימייל שלך</p>
+      </div>
+      <div class="auth-success" id="otp-success" style="display:block">
+        ✅ קוד OTP נשלח! (סימולציה: הקוד הוא <strong id="otp-display"></strong>)
+      </div>
+      <div class="auth-error" id="otp-error"></div>
+      <div class="otp-inputs">
+        <input class="otp-input" id="otp-0" maxlength="1" oninput="otpMove(0)" onkeydown="otpBack(event,0)">
+        <input class="otp-input" id="otp-1" maxlength="1" oninput="otpMove(1)" onkeydown="otpBack(event,1)">
+        <input class="otp-input" id="otp-2" maxlength="1" oninput="otpMove(2)" onkeydown="otpBack(event,2)">
+        <input class="otp-input" id="otp-3" maxlength="1" oninput="otpMove(3)" onkeydown="otpBack(event,3)">
+        <input class="otp-input" id="otp-4" maxlength="1" oninput="otpMove(4)" onkeydown="otpBack(event,4)">
+        <input class="otp-input" id="otp-5" maxlength="1" oninput="otpMove(5)" onkeydown="otpBack(event,5)">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="verifyOTP()">אמת קוד</button>
+      <button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="resendOTP()">שלח קוד מחדש</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="s-home" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <div class="nav-links">
+      <a class="nav-link" onclick="loadExamMenu();showScreen('s-exam-menu')">🎓 בחינה</a>
+      <a class="nav-link" onclick="loadResultsScreen();showScreen('s-results')">📊 מסלול</a>
+      <div class="user-badge" onclick="loadProfile();showScreen('s-profile')">
+        <div class="user-avatar" id="nav-avatar">?</div>
+        <div class="user-name" id="nav-username">משתמש</div>
+      </div>
+      <a class="nav-link" onclick="doLogout()" style="color:var(--danger)">יציאה</a>
+    </div>
+  </nav>
+  <div class="hero">
+    <div class="badge">✨ קורס אדפטיבי עם שאלות AI דינמיות</div>
+    <h1>תיאוריה לפי<br><span>הרמה שלך</span></h1>
+    <p>המערכת מאבחנת את הפערים שלך, יוצרת שאלות חדשות בכל פעם, ומלווה אותך עם AI עד להצלחה</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="startDiagnosis()">🎯 התחל אבחון אישי</button>
+      <button class="btn btn-outline" onclick="loadProfile();showScreen('s-profile')">👤 הפרופיל שלי</button>
+    </div>
+    <div class="how-it-works">
+      <div class="step-card"><div class="step-num">1</div><h3>אבחון</h3><p>שאלות מכל הנושאים</p></div>
+      <div class="step-card"><div class="step-num">2</div><h3>ניתוח פערים</h3><p>איפה אתה חלש</p></div>
+      <div class="step-card"><div class="step-num">3</div><h3>לימוד</h3><p>חומר מותאם לנושא</p></div>
+      <div class="step-card"><div class="step-num">4</div><h3>שאלות AI</h3><p>חדשות בכל תרגול</p></div>
+      <div class="step-card"><div class="step-num">5</div><h3>קידום</h3><p>הנושא הבא כשמוכן</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGNOSIS -->
+<div id="s-diagnosis" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <a class="nav-link" onclick="showScreen('s-home')">← חזרה</a>
+  </nav>
+  <div class="page-container">
+    <div class="page-title">אבחון התחלתי</div>
+    <div class="page-subtitle">ענה על השאלות כדי שנבין את הרמה שלך</div>
+    <div class="progress-wrap"><div class="progress-fill" id="diag-progress" style="width:0%"></div></div>
+    <div class="q-counter" id="diag-counter">שאלה 1 מתוך 11</div>
+    <div class="q-card">
+      <div class="q-topic" id="diag-topic"></div>
+      <div class="q-text" id="diag-text"></div>
+    </div>
+    <div class="answers" id="diag-answers"></div>
+    <div class="ai-box" id="diag-ai"><div class="ai-label">🤖 הסבר AI</div><div class="ai-text" id="diag-ai-text"></div></div>
+    <div class="next-btn-wrap"><button class="btn btn-primary" id="diag-next" style="display:none" onclick="diagNext()">הבאה ←</button></div>
+  </div>
+</div>
+
+<!-- RESULTS / ROADMAP -->
+<div id="s-results" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <div class="nav-links">
+      <a class="nav-link" onclick="showScreen('s-home')">🏠 בית</a>
+      <a class="nav-link" onclick="loadProfile();showScreen('s-profile')">👤 פרופיל</a>
+    </div>
+  </nav>
+  <div class="results-wrap">
+    <div class="score-ring">
+      <svg width="130" height="130" viewBox="0 0 130 130">
+        <circle cx="65" cy="65" r="54" fill="none" stroke="#1c1c26" stroke-width="10"/>
+        <circle id="score-arc" cx="65" cy="65" r="54" fill="none" stroke="url(#grad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="339"/>
+        <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#ff6584"/></linearGradient></defs>
+      </svg>
+      <div class="score-inner"><div class="score-big" id="score-num">0%</div><div class="score-small">ציון</div></div>
+    </div>
+    <div class="results-title" id="results-title">תוצאות האבחון</div>
+    <div class="results-sub" id="results-sub"></div>
+    <div class="topics-list" id="topics-list"></div>
+    <div class="roadmap" id="roadmap-section" style="display:none">
+      <h3>🗺️ מסלול הלימוד שלך</h3>
+      <div id="roadmap-items"></div>
+    </div>
+    <button class="btn btn-primary" id="start-learning-btn" style="display:none" onclick="startLearning()">📚 התחל ללמוד לפי המסלול</button>
+    <button class="btn btn-outline" style="margin-top:10px" onclick="startDiagnosis()">🔄 אבחון מחדש</button>
+  </div>
+</div>
+
+<!-- LEARN -->
+<div id="s-learn" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <a class="nav-link" onclick="showScreen('s-results')">← המסלול שלי</a>
+  </nav>
+  <div class="page-container">
+    <div class="page-title" id="learn-title">לומדים</div>
+    <div class="page-subtitle">קרא את החומר לפני שמתרגלים</div>
+    <div class="learn-card" id="learn-content"></div>
+    <button class="btn btn-primary" onclick="startPractice()">✅ הבנתי – נתרגל עם שאלות AI!</button>
+  </div>
+</div>
+
+<!-- PRACTICE -->
+<div id="s-practice" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <a class="nav-link" onclick="showScreen('s-learn')">← חזרה לחומר</a>
+  </nav>
+  <div class="page-container">
+    <div class="page-title" id="prac-title">תרגול</div>
+    <div class="level-indicator" id="level-dots"></div>
+    <div class="progress-wrap"><div class="progress-fill" id="prac-progress" style="width:0%"></div></div>
+    <div class="q-counter" id="prac-counter">שאלה 1 מתוך 5</div>
+    <div id="prac-loading" class="ai-generating" style="display:none">
+      <div class="spinner" style="width:28px;height:28px"></div>
+      <p>🤖 AI יוצר שאלה חדשה בדיוק לרמה שלך...</p>
+    </div>
+    <div id="prac-q-wrap">
+      <div class="q-card">
+        <div class="q-topic" id="prac-topic"></div>
+        <div class="q-text" id="prac-text"></div>
+      </div>
+      <div class="answers" id="prac-answers"></div>
+      <div class="ai-box" id="prac-ai"><div class="ai-label">🤖 הסבר AI</div><div class="ai-text" id="prac-ai-text"></div></div>
+      <div class="next-btn-wrap"><button class="btn btn-primary" id="prac-next" style="display:none" onclick="pracNext()">הבאה ←</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPIC DONE -->
+<div id="s-topic-done" class="screen">
+  <nav><div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div></nav>
+  <div class="done-wrap">
+    <div style="font-size:64px;margin-bottom:1rem" id="done-emoji">🎉</div>
+    <div class="results-title" id="done-title">כל הכבוד!</div>
+    <div class="results-sub" id="done-sub"></div>
+    <div class="done-score-box">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:0.5rem">תוצאות התרגול</div>
+      <div style="font-size:28px;font-weight:900" id="done-score"></div>
+    </div>
+    <button class="btn btn-primary" id="done-next-btn" style="width:100%">הנושא הבא ←</button>
+    <button class="btn btn-outline" style="margin-top:10px;width:100%" onclick="loadResultsScreen();showScreen('s-results')">📊 ראה מסלול מלא</button>
+  </div>
+</div>
+
+<!-- EXAM MENU -->
+<div id="s-exam-menu" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <a class="nav-link" onclick="showScreen('s-home')">← חזרה</a>
+  </nav>
+  <div class="page-container">
+    <div class="page-title">🎓 מצב בחינה</div>
+    <div class="page-subtitle">ללא הסברים באמצע – רק בסוף תקבל ניתוח מלא</div>
+    <div style="width:100%;margin-bottom:2rem">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;font-weight:600">בחינה כללית</div>
+      <div class="exam-option-card" onclick="startExam('general',null)">
+        <div class="exam-option-icon">📋</div>
+        <div class="exam-option-info">
+          <div class="exam-option-title">בחינה מלאה – 30 שאלות</div>
+          <div class="exam-option-desc">מכל הנושאים · טיימר 40 דקות · ניתוח AI בסוף</div>
+        </div>
+        <div class="exam-option-arrow">←</div>
+      </div>
+    </div>
+    <div style="width:100%">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;font-weight:600">בחינה לפי נושא – 10 שאלות</div>
+      <div id="exam-topic-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXAM SCREEN -->
+<div id="s-exam" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div id="exam-timer" style="font-size:15px;font-weight:700;color:var(--warning);font-family:'Heebo',sans-serif">40:00</div>
+      <a class="nav-link" onclick="showExitModal()">יציאה</a>
+    </div>
+  </nav>
+  <div class="page-container">
+    <div class="progress-wrap"><div class="progress-fill" id="exam-progress" style="width:0%"></div></div>
+    <div class="q-counter" id="exam-counter">שאלה 1 מתוך 30</div>
+    <div id="exam-loading" class="ai-generating" style="display:none">
+      <div class="spinner" style="width:28px;height:28px"></div>
+      <p>🤖 AI מכין שאלה...</p>
+    </div>
+    <div id="exam-q-wrap">
+      <div class="q-card">
+        <div class="q-topic" id="exam-topic-label"></div>
+        <div class="q-text" id="exam-text"></div>
+      </div>
+      <div class="answers" id="exam-answers"></div>
+      <div class="next-btn-wrap"><button class="btn btn-primary" id="exam-next" style="display:none" onclick="examNext()">הבאה ←</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXAM RESULTS -->
+<div id="s-exam-results" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <a class="nav-link" onclick="showScreen('s-home')">🏠 בית</a>
+  </nav>
+  <div class="results-wrap">
+    <div class="score-ring">
+      <svg width="130" height="130" viewBox="0 0 130 130">
+        <circle cx="65" cy="65" r="54" fill="none" stroke="#1c1c26" stroke-width="10"/>
+        <circle id="exam-score-arc" cx="65" cy="65" r="54" fill="none" stroke="url(#grad2)" stroke-width="10" stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="339"/>
+        <defs><linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#ff6584"/></linearGradient></defs>
+      </svg>
+      <div class="score-inner"><div class="score-big" id="exam-score-num">0%</div><div class="score-small">ציון</div></div>
+    </div>
+    <div class="results-title" id="exam-result-title">תוצאות הבחינה</div>
+    <div class="results-sub" id="exam-result-sub"></div>
+    <div style="width:100%;background:rgba(108,99,255,0.07);border:1px solid rgba(108,99,255,0.2);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1.5rem;text-align:right">
+      <div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:0.75rem">🤖 ניתוח AI – על מה להתמקד</div>
+      <div id="exam-ai-analysis" style="font-size:14px;color:var(--muted);line-height:1.7"><span class="spinner"></span> מנתח תוצאות...</div>
+    </div>
+    <div class="topics-list" id="exam-topics-breakdown" style="width:100%;margin-bottom:1.5rem;text-align:right"></div>
+    <div style="width:100%;text-align:right;margin-bottom:1.5rem">
+      <div style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:0.75rem">❌ שאלות שטעית</div>
+      <div id="exam-wrong-list"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="loadExamMenu();showScreen('s-exam-menu')">🔄 בחינה נוספת</button>
+    <button class="btn btn-outline" style="margin-top:10px;width:100%" onclick="loadResultsScreen();showScreen('s-results')">📚 חזור למסלול הלימוד</button>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div id="s-profile" class="screen">
+  <nav>
+    <div class="logo"><div class="logo-icon">🚗</div>תיאוריה חכמה</div>
+    <div class="nav-links">
+      <a class="nav-link" onclick="showScreen('s-home')">🏠 בית</a>
+      <a class="nav-link" onclick="loadResultsScreen();showScreen('s-results')">📊 מסלול</a>
+    </div>
+  </nav>
+  <div class="page-container">
+    <div class="page-title">👤 הפרופיל שלי</div>
+    <div class="page-subtitle">סטטיסטיקות ומעקב התקדמות</div>
+    <div class="profile-grid" id="profile-stats"></div>
+    <div style="width:100%;text-align:right;margin-bottom:1rem">
+      <div style="font-size:14px;font-weight:600;margin-bottom:0.75rem;color:var(--muted)">📅 פעילות השבוע</div>
+      <div class="streak-bar" id="streak-bar"></div>
+    </div>
+    <div style="width:100%;text-align:right;margin-bottom:1rem">
+      <div style="font-size:14px;font-weight:600;margin-bottom:0.75rem;color:var(--muted)">📜 היסטוריית תרגולים</div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="if(confirm('למחוק את כל הנתונים?')){localStorage.clear();location.reload()}" style="align-self:flex-start">🗑️ איפוס נתונים</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// TOPICS DATA
+// ============================================================
+const TOPICS = {
+  signs:    { name:"תמרורים",       icon:"🛑", learn:{ title:"תמרורים – מה שחייב לדעת", body:"תמרורים הם שלטי הדרך הרשמיים שנקבעו בחוק תעבורה ישראלי. כל נהג חייב להכיר אותם ולציית להם.", rule:"תמרורים אדומים – עצור או אסור. כחול – מידע או חובה. משולש אדום – אזהרה. עיגול אדום – איסור.", example:"תמרור STOP: עצור לחלוטין לפני קו העצירה, גם אם אין תנועה. לא מספיק להאט!" } },
+  overtake: { name:"עקיפה",         icon:"🚗", learn:{ title:"עקיפה – מתי מותר ומתי אסור", body:"עקיפה היא אחת הסיבות העיקריות לתאונות קטלניות. חשוב לדעת מתי מותר לעקוף.", rule:"עקיפה מותרת רק כשהקו המרכזי מקוטע, הדרך פנויה לחלוטין, ואין מגבלות. אסור לעקוף ליד צומת, מעבר חציה, גבעה, עיקול, ובקו רציף.", example:"אתה בכביש ישר, קו מקוטע, הנתיב השמאלי פנוי ל-200 מטר – מותר לעקוף." } },
+  speed:    { name:"מהירות",        icon:"⚡", learn:{ title:"מהירויות מותרות", body:"החוק קובע מהירויות מקסימום בכל סוג כביש. חריגה ממהירות מסכנת חיים.", rule:"אזור מגורים: 50 קמ\"ש. בין-עירוני: 90 קמ\"ש. כביש מהיר: 110 קמ\"ש. בגשם/ערפל – להפחית מהירות.", example:"נוסע בכביש בין-עירוני ללא תמרור מהירות? המהירות המותרת היא 90 קמ\"ש." } },
+  priority: { name:"זכות קדימה",   icon:"🔀", learn:{ title:"זכות קדימה – מי עובר ראשון", body:"זכות קדימה קובעת מי רשאי לעבור בצומת ראשון. אי-ציות הוא גורם מרכזי בתאונות.", rule:"ברחוב ראשי – רכב ברחוב הראשי עובר ראשון. ללא תמרורים – תן זכות קדימה לרכב מימין.", example:"הגעת לצומת ללא תמרורים. מצד ימינך מגיע רכב – עצור ותן לו לעבור ראשון." } },
+  parking:  { name:"חנייה",         icon:"🅿️", learn:{ title:"חנייה – איפה מותר ואיפה אסור", body:"חנייה במקום אסור גורמת לפקקים, מסכנת חיים ועלולה לגרום לגרירת הרכב.", rule:"אסור לחנות: ליד הידרנט (6 מ'), ליד צומת (12 מ'), על מדרכה, מול כניסה לבניין, על קו צהוב רצוף.", example:"מקום חנייה ב-10 מ' מהצומת? אסור! המרחק המינימלי הוא 12 מ' מצומת." } },
+  lights:   { name:"תאורה",         icon:"💡", learn:{ title:"תאורת רכב – מתי ואיך", body:"תאורה נכונה היא חיונית לבטיחות בדרכים, במיוחד בלילה ובתנאי ראות ירודה.", rule:"חובה להדליק אורות חצי שעה לפני שקיעה עד חצי שעה אחרי זריחה, ובכל מצב ראות ירודה. אורות ארוכים – לא בתוך יישוב ולא כשיש רכב מולך.", example:"שעה 17:30 בחורף, השמש שוקעת בשש – כבר עכשיו חובה להדליק אורות." } },
+  safety:   { name:"בטיחות",        icon:"🦺", learn:{ title:"כללי בטיחות בסיסיים", body:"בטיחות בדרכים מתחילה בהתנהגות הנהג. רוב התאונות נגרמות מרשלנות.", rule:"חגור חגורת בטיחות תמיד. מרחק בטיחות = 2 שניות לפחות. אסור לשלוח הודעות בנהיגה. עייפות = סכנה.", example:"נוסע ב-90 קמ\"ש – מרחק הבטיחות צריך להיות לפחות 50 מטר מהרכב לפניך." } },
+  highway:  { name:"כביש מהיר",     icon:"🛣️", learn:{ title:"כביש מהיר – כללים מיוחדים", body:"כביש מהיר הוא כביש שמהירות הנסיעה בו גבוהה – ולכן יש לו כללים מיוחדים.", rule:"כניסה רק דרך כניסה. יציאה רק דרך יציאה. נסיעה בנתיב ימיני. עקיפה רק משמאל. אסור לעצור על הכביש.", example:"פנצ'ר בכביש מהיר? נסע לאט לכתף הימנית, הדלק אורות חירום, הרחק מהרכב." } },
+  pedestrians:{ name:"הולכי רגל",  icon:"🚶", learn:{ title:"הולכי רגל – זכויות וחובות", body:"הולכי רגל הם המשתמשים הפגיעים ביותר בדרך. חובת הנהג להגן עליהם.", rule:"ב מעבר חציה עם אורות – עוקב אחרי הרמזור. ב מעבר חציה ללא אורות – הולך רגל קודם. אסור לחסום מעבר חציה.", example:"הולך רגל עומד ליד מעבר חציה ללא רמזור – עצור ותן לו לעבור." } },
+  alcohol:  { name:"אלכוהול וסמים", icon:"🚫", learn:{ title:"אלכוהול וסמים בנהיגה", body:"נהיגה תחת השפעת אלכוהול או סמים היא עבירה פלילית חמורה שמסכנת חיים.", rule:"מגבלת אלכוהול: 0.25 מ\"ג/ליטר אוויר נשוף. לנהגים חדשים (עד 2 שנים) ולנהגי כבד: 0. כל שימוש בסמים – אסור לחלוטין.", example:"שתית בירה אחת בלילה? ייתכן שרמת האלכוהול עדיין גבוהה בבוקר. אל תסתכן." } },
+  weather:  { name:"מזג אוויר",     icon:"🌧️", learn:{ title:"נהיגה בתנאי מזג אוויר קיצוניים", body:"גשם, ערפל ושמש עזה משפיעים על הראות ועל מרחק הבלימה.", rule:"בגשם – הפחת מהירות, הגדל מרחק בטיחות, הדלק אורות. בערפל כבד – אורות ערפל. בשמש – שמור על קשר עין עם הדרך.", example:"בגשם כבד מרחק הבלימה גדל פי 2-3. אם נסעת ב-90 – רד ל-60 לפחות." } }
+};
+
+const DIAG_QUESTIONS = [
+  { topic:"signs",       text:"מה משמעות תמרור STOP?",                        answers:["האט אם יש תנועה","עצור לחלוטין לפני הצומת","עצור רק בלילה","עצור רק אם יש הולכי רגל"], correct:1 },
+  { topic:"overtake",    text:"מתי מותר לעקוף?",                               answers:["תמיד אם הדרך פנויה","רק כשהקו המרכזי מקוטע","בכל דרך ישרה","רק ביום"], correct:1 },
+  { topic:"speed",       text:"מהירות מותרת באזור מגורים ללא תמרור?",         answers:["30 קמ\"ש","50 קמ\"ש","70 קמ\"ש","90 קמ\"ש"], correct:1 },
+  { topic:"priority",    text:"בצומת ללא תמרורים – מי עובר ראשון?",           answers:["מי שנוסע ישר","הרכב מימין","מי שנכנס ראשון","הרכב הגדול"], correct:1 },
+  { topic:"parking",     text:"מרחק מינימלי מצומת לחנייה?",                   answers:["5 מ'","8 מ'","12 מ'","15 מ'"], correct:2 },
+  { topic:"lights",      text:"מתי חובה להדליק אורות?",                       answers:["רק בלילה","חצי שעה לפני שקיעה עד חצי שעה אחרי זריחה","רק בגשם","רק בערפל"], correct:1 },
+  { topic:"safety",      text:"מהו זמן הבטיחות המינימלי בין כלי רכב?",       answers:["1 שניה","2 שניות","3 שניות","5 שניות"], correct:1 },
+  { topic:"highway",     text:"בכביש מהיר – באיזה נתיב חובה לנסוע?",         answers:["שמאלי","אמצעי","ימיני","כל נתיב"], correct:2 },
+  { topic:"pedestrians", text:"הולך רגל ליד מעבר חציה ללא רמזור – מה עושים?",answers:["ממשיכים אם הדרך פנויה","עוצרים ונותנים לו לעבור","מאיטים ועוברים","מצפצפים"], correct:1 },
+  { topic:"alcohol",     text:"מהי מגבלת האלכוהול לנהגים ותיקים?",           answers:["0 כלל","0.25 מ\"ג/ל' אוויר נשוף","0.5 מ\"ג/ל'","1 מ\"ג/ל'"], correct:1 },
+  { topic:"weather",     text:"בגשם כבד – מה עושים?",                         answers:["שומרים על אותה מהירות","מפחיתים מהירות ומגדילים מרחק","עוצרים תמיד","עוברים לנתיב שמאלי"], correct:1 }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  diagIdx:0, diagScore:0, diagAnswered:false,
+  topicScores:{}, roadmap:[], currentTopicIdx:0,
+  pracIdx:0, pracScore:0, pracAnswered:false, currentTopicKey:null,
+  currentAIQuestion:null,
+  history:[], totalSessions:0, totalCorrect:0, totalQuestions:0,
+  activeDays:[]
+};
+
+function saveState() { localStorage.setItem('theoryState2', JSON.stringify(state)); }
+function loadState() { const s=localStorage.getItem('theoryState2'); if(s) try{state=JSON.parse(s);}catch{} }
+
+// ============================================================
+// UTILS
+// ============================================================
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+const LETTERS = ['א','ב','ג','ד'];
+
+function renderAnswers(containerId, question, onSelect) {
+  const c = document.getElementById(containerId); c.innerHTML='';
+  question.answers.forEach((ans,i)=>{
+    const btn=document.createElement('button'); btn.className='ans-btn';
+    btn.innerHTML=`<span class="ans-letter">${LETTERS[i]}</span>${ans}`;
+    btn.onclick=()=>onSelect(i); c.appendChild(btn);
+  });
+}
+
+function markAnswers(containerId, chosen, correct) {
+  document.querySelectorAll(`#${containerId} .ans-btn`).forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correct) b.classList.add('correct');
+    else if(i===chosen) b.classList.add('wrong');
+  });
+}
+
+async function getAIExplanation(q, wrongIdx, textElId, boxId) {
+  const box=document.getElementById(boxId), textEl=document.getElementById(textElId);
+  textEl.innerHTML='<span class="spinner"></span> מחשב הסבר...'; box.classList.add('show');
+  try {
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:`אתה מורה לתיאוריה נהיגה בישראל. תלמיד טעה:\nשאלה: ${q.text}\nתשובה שגויה: ${q.answers[wrongIdx]}\nתשובה נכונה: ${q.answers[q.correct]}\nתן הסבר קצר (2-3 משפטים) בעברית ידידותית ומה הכלל לזכור. אל תתחיל עם "כמובן".`}]})});
+    const data=await res.json(); textEl.textContent=data.content[0].text;
+  } catch { textEl.textContent=`התשובה הנכונה: ${q.answers[q.correct]}`; }
+}
+
+// ============================================================
+// AI DYNAMIC QUESTION GENERATOR
+// ============================================================
+async function generateAIQuestion(topicKey, difficulty) {
+  const t = TOPICS[topicKey];
+  const diffText = difficulty === 'easy' ? 'קלה למתחיל' : difficulty === 'medium' ? 'בינונית' : 'מאתגרת';
+  const prompt = `אתה מחולל שאלות תיאוריה נהיגה לישראל.
+צור שאלת אמריקאית (1 נכונה, 3 מסיחות) בנושא: ${t.name}
+רמת קושי: ${diffText}
+החזר JSON בלבד, ללא שום טקסט נוסף, בפורמט:
+{"text":"השאלה כאן","answers":["תשובה א","תשובה ב","תשובה ג","תשובה ד"],"correct":0}
+המספר ב-correct הוא index (0-3) של התשובה הנכונה.
+הוסף את התשובה הנכונה במיקום אקראי (לא תמיד ראשונה).
+השאלה חייבת להיות על חוקי התעבורה הישראליים בלבד.`;
+
+  const res = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
+  const data = await res.json();
+  const text = data.content[0].text.replace(/```json|```/g,'').trim();
+  return JSON.parse(text);
+}
+
+// ============================================================
+// DIAGNOSIS
+// ============================================================
+function startDiagnosis() {
+  state.diagIdx=0; state.diagScore=0; state.diagAnswered=false; state.topicScores={};
+  showScreen('s-diagnosis'); loadDiagQuestion();
+}
+
+function loadDiagQuestion() {
+  state.diagAnswered=false;
+  const q=DIAG_QUESTIONS[state.diagIdx];
+  document.getElementById('diag-progress').style.width=((state.diagIdx/DIAG_QUESTIONS.length)*100)+'%';
+  document.getElementById('diag-counter').textContent=`שאלה ${state.diagIdx+1} מתוך ${DIAG_QUESTIONS.length}`;
+  document.getElementById('diag-topic').textContent=TOPICS[q.topic].name;
+  document.getElementById('diag-text').textContent=q.text;
+  document.getElementById('diag-ai').classList.remove('show');
+  document.getElementById('diag-next').style.display='none';
+  renderAnswers('diag-answers',q,selectDiagAnswer);
+}
+
+async function selectDiagAnswer(idx) {
+  if(state.diagAnswered) return; state.diagAnswered=true;
+  const q=DIAG_QUESTIONS[state.diagIdx];
+  markAnswers('diag-answers',idx,q.correct);
+  if(!state.topicScores[q.topic]) state.topicScores[q.topic]={correct:0,total:0};
+  state.topicScores[q.topic].total++;
+  state.totalQuestions++;
+  if(idx===q.correct){state.diagScore++;state.topicScores[q.topic].correct++;state.totalCorrect++;document.getElementById('diag-next').style.display='block';}
+  else{await getAIExplanation(q,idx,'diag-ai-text','diag-ai');document.getElementById('diag-next').style.display='block';}
+  saveState();
+}
+
+function diagNext() {
+  state.diagIdx++;
+  if(state.diagIdx>=DIAG_QUESTIONS.length){buildRoadmap();logSession('אבחון',state.diagScore,DIAG_QUESTIONS.length);loadResultsScreen();}
+  else loadDiagQuestion();
+}
+
+// ============================================================
+// ROADMAP
+// ============================================================
+function buildRoadmap() {
+  const keys=Object.keys(TOPICS);
+  state.roadmap=keys.sort((a,b)=>{
+    const sa=state.topicScores[a], sb=state.topicScores[b];
+    const pa=sa?sa.correct/sa.total:-1, pb=sb?sb.correct/sb.total:-1;
+    return pa-pb;
+  });
+  state.currentTopicIdx=0; saveState();
+}
+
+// ============================================================
+// RESULTS
+// ============================================================
+function loadResultsScreen() {
+  showScreen('s-results');
+  const total=DIAG_QUESTIONS.length, pct=Math.round((state.diagScore/total)*100);
+  const circ=339, offset=circ-(circ*pct/100);
+  document.getElementById('score-arc').style.strokeDashoffset=offset;
+  document.getElementById('score-num').textContent=pct+'%';
+  document.getElementById('results-title').textContent=pct>=70?'🎉 תוצאה טובה!':'📚 יש מה לשפר';
+  document.getElementById('results-sub').textContent=`ענית נכון על ${state.diagScore} מתוך ${total} שאלות`;
+
+  const list=document.getElementById('topics-list');
+  list.innerHTML='<div style="font-size:13px;color:var(--muted);margin-bottom:0.75rem;font-weight:600">ביצועים לפי נושא</div>';
+  Object.entries(TOPICS).forEach(([key,t])=>{
+    const sc=state.topicScores[key], p=sc?Math.round(sc.correct/sc.total*100):null;
+    const color=p===null?'var(--muted)':p>=70?'var(--success)':p>=40?'var(--warning)':'var(--danger)';
+    const row=document.createElement('div'); row.className='topic-row';
+    row.innerHTML=`<div class="topic-name">${t.icon} ${t.name}</div><div class="topic-bar-bg"><div class="topic-bar" style="width:${p||0}%;background:${color}"></div></div><div class="topic-pct" style="color:${color}">${p!==null?p+'%':'לא נבדק'}</div>`;
+    list.appendChild(row);
+  });
+
+  if(state.roadmap.length>0){
+    document.getElementById('roadmap-section').style.display='block';
+    document.getElementById('start-learning-btn').style.display='block';
+    const rmItems=document.getElementById('roadmap-items'); rmItems.innerHTML='';
+    state.roadmap.forEach((key,i)=>{
+      const t=TOPICS[key], sc=state.topicScores[key], p=sc?Math.round(sc.correct/sc.total*100):0;
+      const isPriority=p<60, isDone=p>=80;
+      const item=document.createElement('div');
+      item.className=`roadmap-item ${isPriority?'priority':isDone?'ok':''}`;
+      item.onclick=()=>{state.currentTopicIdx=i;state.currentTopicKey=key;loadLearnScreen();};
+      item.innerHTML=`<div class="rm-icon">${i===state.currentTopicIdx?'▶️':isDone?'✅':t.icon}</div><div class="rm-info"><div class="rm-name">${t.name}</div><div class="rm-desc">${isPriority?'נושא לחיזוק – לחץ להתחיל':isDone?'שולט בחומר':'לחץ לתרגול נוסף'}</div></div><div class="rm-badge ${isPriority?'need':'good'}">${p}%</div>`;
+      rmItems.appendChild(item);
+    });
+  }
+}
+
+// ============================================================
+// LEARN
+// ============================================================
+function startLearning() {
+  if(!state.roadmap.length) return;
+  state.currentTopicKey=state.roadmap[state.currentTopicIdx]; loadLearnScreen();
+}
+
+function loadLearnScreen() {
+  const t=TOPICS[state.currentTopicKey], l=t.learn;
+  document.getElementById('learn-title').textContent=`לומדים: ${t.name}`;
+  document.getElementById('learn-content').innerHTML=`<div class="learn-topic-badge">${t.icon} ${t.name}</div><h2>${l.title}</h2><p>${l.body}</p><div class="rule-box"><p>📌 ${l.rule}</p></div><div class="example-box"><div class="example-label">✅ דוגמה מעשית</div><p>${l.example}</p></div>`;
+  showScreen('s-learn');
+}
+
+// ============================================================
+// PRACTICE (AI DYNAMIC QUESTIONS)
+// ============================================================
+const PRAC_TOTAL = 5;
+
+function startPractice() {
+  state.pracIdx=0; state.pracScore=0; state.pracAnswered=false;
+  state.totalSessions++;
+  showScreen('s-practice');
+  loadAIQuestion();
+}
+
+function getDifficulty() {
+  const sc=state.topicScores[state.currentTopicKey];
+  const pct=sc?sc.correct/sc.total:0;
+  if(pct<0.4) return 'easy';
+  if(pct<0.7) return 'medium';
+  return 'hard';
+}
+
+async function loadAIQuestion() {
+  state.pracAnswered=false;
+  const t=TOPICS[state.currentTopicKey];
+  const pct=(state.pracIdx/PRAC_TOTAL)*100;
+  document.getElementById('prac-title').textContent=`תרגול: ${t.name}`;
+  document.getElementById('prac-progress').style.width=pct+'%';
+  document.getElementById('prac-counter').textContent=`שאלה ${state.pracIdx+1} מתוך ${PRAC_TOTAL}`;
+  document.getElementById('prac-topic').textContent=t.name;
+  document.getElementById('prac-ai').classList.remove('show');
+  document.getElementById('prac-next').style.display='none';
+
+  // Level dots
+  const dots=document.getElementById('level-dots'); dots.innerHTML='';
+  for(let i=0;i<PRAC_TOTAL;i++){
+    const d=document.createElement('div'); d.className='level-dot';
+    d.style.background=i<state.pracIdx?'var(--success)':i===state.pracIdx?'var(--accent)':'var(--surface2)';
+    dots.appendChild(d);
+  }
+
+  // Show loading, hide question
+  document.getElementById('prac-loading').style.display='block';
+  document.getElementById('prac-q-wrap').style.display='none';
+
+  try {
+    const q=await generateAIQuestion(state.currentTopicKey, getDifficulty());
+    state.currentAIQuestion=q;
+    document.getElementById('prac-text').textContent=q.text;
+    document.getElementById('prac-loading').style.display='none';
+    document.getElementById('prac-q-wrap').style.display='block';
+    renderAnswers('prac-answers',q,selectPracAnswer);
+  } catch(e) {
+    document.getElementById('prac-loading').innerHTML='<p style="color:var(--danger)">⚠️ שגיאה ביצירת שאלה. בדוק חיבור לאינטרנט.</p>';
+  }
+}
+
+async function selectPracAnswer(idx) {
+  if(state.pracAnswered) return; state.pracAnswered=true;
+  const q=state.currentAIQuestion;
+  markAnswers('prac-answers',idx,q.correct);
+  if(!state.topicScores[state.currentTopicKey]) state.topicScores[state.currentTopicKey]={correct:0,total:0};
+  state.topicScores[state.currentTopicKey].total++; state.totalQuestions++;
+  if(idx===q.correct){state.pracScore++;state.topicScores[state.currentTopicKey].correct++;state.totalCorrect++;document.getElementById('prac-next').style.display='block';}
+  else{await getAIExplanation(q,idx,'prac-ai-text','prac-ai');document.getElementById('prac-next').style.display='block';}
+  saveState();
+}
+
+function pracNext() {
+  state.pracIdx++;
+  if(state.pracIdx>=PRAC_TOTAL) showTopicDone();
+  else loadAIQuestion();
+}
+
+// ============================================================
+// TOPIC DONE
+// ============================================================
+function showTopicDone() {
+  const pct=Math.round((state.pracScore/PRAC_TOTAL)*100), passed=pct>=60;
+  logSession(TOPICS[state.currentTopicKey].name, state.pracScore, PRAC_TOTAL);
+  document.getElementById('done-emoji').textContent=passed?'🎉':'💪';
+  document.getElementById('done-title').textContent=passed?'כל הכבוד!':'כמעט שם!';
+  document.getElementById('done-sub').textContent=passed?`עברת את נושא ${TOPICS[state.currentTopicKey].name} בהצלחה!`:`ענית נכון על ${pct}% – מומלץ לחזור על החומר`;
+  document.getElementById('done-score').textContent=`${state.pracScore}/${PRAC_TOTAL} נכון (${pct}%)`;
+  const btn=document.getElementById('done-next-btn');
+  if(!passed){btn.textContent='🔄 נסה שוב';btn.onclick=()=>{state.pracIdx=0;state.pracScore=0;startPractice();};}
+  else{const hasNext=state.currentTopicIdx<state.roadmap.length-1;btn.textContent=hasNext?'הנושא הבא ←':'🏁 סיימת את המסלול!';btn.onclick=hasNext?nextTopic:()=>showScreen('s-home');}
+  showScreen('s-topic-done');
+}
+
+function nextTopic() {
+  state.currentTopicIdx++;
+  if(state.currentTopicIdx<state.roadmap.length){state.currentTopicKey=state.roadmap[state.currentTopicIdx];loadLearnScreen();}
+  else showScreen('s-home');
+}
+
+// ============================================================
+// PROFILE
+// ============================================================
+function logSession(topic, correct, total) {
+  if(!state.history) state.history=[];
+  state.history.unshift({ topic, correct, total, date: new Date().toLocaleDateString('he-IL'), ts: Date.now() });
+  if(state.history.length>20) state.history=state.history.slice(0,20);
+  // log active day
+  const today=new Date().toDateString();
+  if(!state.activeDays) state.activeDays=[];
+  if(!state.activeDays.includes(today)) state.activeDays.push(today);
+  saveState();
+}
+
+function loadProfile() {
+  const totalQ=state.totalQuestions||0, totalC=state.totalCorrect||0;
+  const avgPct=totalQ>0?Math.round(totalC/totalQ*100):0;
+  const topicsLearned=Object.keys(state.topicScores||{}).length;
+
+  // Stats cards
+  document.getElementById('profile-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-val">${totalQ}</div><div class="stat-lbl">שאלות ענינו</div></div>
+    <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val">${avgPct}%</div><div class="stat-lbl">ממוצע נכון</div></div>
+    <div class="stat-card"><div class="stat-icon">📚</div><div class="stat-val">${topicsLearned}</div><div class="stat-lbl">נושאים תורגלו</div></div>
+    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val">${(state.activeDays||[]).length}</div><div class="stat-lbl">ימי פעילות</div></div>`;
+
+  // Streak (last 7 days)
+  const bar=document.getElementById('streak-bar'); bar.innerHTML='';
+  const days=['א','ב','ג','ד','ה','ו','ש'];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=d.toDateString();
+    const isToday=i===0, done=(state.activeDays||[]).includes(ds);
+    const el=document.createElement('div'); el.className='streak-day '+(isToday?'today':done?'done':'miss');
+    el.textContent=days[d.getDay()]; bar.appendChild(el);
+  }
+
+  // History
+  const hist=document.getElementById('history-list');
+  if(!state.history||state.history.length===0){hist.innerHTML='<div style="color:var(--muted);font-size:14px;padding:1rem 0">עדיין לא בוצעו תרגולים</div>';return;}
+  hist.innerHTML='';
+  state.history.slice(0,10).forEach(h=>{
+    const p=Math.round(h.correct/h.total*100);
+    const color=p>=70?'var(--success)':p>=40?'var(--warning)':'var(--danger)';
+    const item=document.createElement('div'); item.className='history-item';
+    item.innerHTML=`<div class="hist-icon">📋</div><div class="hist-info"><div class="hist-title">${h.topic}</div><div class="hist-date">${h.date}</div></div><div class="hist-score" style="color:${color}">${p}%</div>`;
+    hist.appendChild(item);
+  });
+}
+</script>
+
+<!-- EXIT MODAL -->
+<div id="exit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;max-width:320px;width:90%;text-align:center">
+    <div style="font-size:36px;margin-bottom:1rem">⚠️</div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:0.75rem">לצאת מהבחינה?</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:1.5rem">ההתקדמות שלך תאבד</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-primary" onclick="confirmExitExam()">כן, צא</button>
+      <button class="btn btn-outline" onclick="closeExitModal()">המשך בחינה</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======= CHATBOT BUBBLE ======= -->
+<style>
+/* BUBBLE BUTTON */
+.chat-bubble {
+  position: fixed; bottom: 24px; left: 24px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; cursor: pointer; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.chat-bubble:hover { transform: scale(1.1); box-shadow: 0 8px 30px rgba(108,99,255,0.5); }
+.chat-bubble .notif {
+  position: absolute; top: -2px; right: -2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent2); border: 2px solid var(--bg);
+  animation: pulse2 2s infinite;
+}
+@keyframes pulse2 { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+
+/* CHAT WINDOW */
+.chat-window {
+  position: fixed; bottom: 90px; left: 24px;
+  width: 340px; max-height: 500px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: flex; flex-direction: column; z-index: 1000;
+  transform: scale(0.9) translateY(20px); opacity: 0;
+  pointer-events: none; transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  overflow: hidden;
+}
+.chat-window.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
+/* CHAT HEADER */
+.chat-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.chat-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.chat-header-info { flex: 1; }
+.chat-header-name { font-size: 14px; font-weight: 600; }
+.chat-header-status { font-size: 11px; color: var(--success); }
+.chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 4px; }
+.chat-close:hover { color: var(--text); }
+
+/* CHAT MESSAGES */
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+  max-height: 330px;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.msg { display: flex; flex-direction: column; max-width: 85%; animation: fadeUp 0.3s ease; }
+.msg.bot { align-self: flex-start; }
+.msg.user { align-self: flex-end; }
+.msg-bubble {
+  padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6;
+}
+.msg.bot .msg-bubble { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 4px 12px 12px 12px; }
+.msg.user .msg-bubble { background: linear-gradient(135deg, var(--accent), #8b83ff); color: white; border-radius: 12px 12px 4px 12px; }
+.msg-time { font-size: 10px; color: var(--muted); margin-top: 3px; padding: 0 4px; }
+.msg.user .msg-time { align-self: flex-end; }
+
+/* QUICK REPLIES */
+.quick-replies { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; }
+.quick-btn {
+  background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.25);
+  color: #a8a3ff; font-size: 12px; font-family: 'Heebo', sans-serif;
+  padding: 5px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s;
+}
+.quick-btn:hover { background: rgba(108,99,255,0.2); }
+
+/* TYPING INDICATOR */
+.typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; }
+.typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce 1.2s infinite; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+/* CHAT INPUT */
+.chat-input-wrap {
+  display: flex; gap: 8px; padding: 12px 14px;
+  border-top: 1px solid var(--border); background: var(--surface2);
+}
+.chat-input {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 9px 13px;
+  font-size: 13px; font-family: 'Heebo', sans-serif; color: var(--text);
+  outline: none; transition: border-color 0.2s; resize: none;
+}
+.chat-input:focus { border-color: rgba(108,99,255,0.4); }
+.chat-input::placeholder { color: var(--muted); }
+.chat-send {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #8b83ff);
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; transition: transform 0.2s;
+  align-self: flex-end;
+}
+.chat-send:hover { transform: scale(1.1); }
+.chat-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+</style>
+
+<!-- Bubble Button -->
+<button class="chat-bubble" onclick="toggleChat()" id="chat-bubble-btn">
+  🤖
+  <div class="notif" id="chat-notif"></div>
+</button>
+
+<!-- Chat Window -->
+<div class="chat-window" id="chat-window">
+  <div class="chat-header">
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">מורה AI – תיאוריה</div>
+      <div class="chat-header-status">● מחובר</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="quick-replies" id="quick-replies"></div>
+  <div class="chat-input-wrap">
+    <textarea class="chat-input" id="chat-input" placeholder="שאל אותי על כל נושא בתיאוריה..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+    <button class="chat-send" id="chat-send-btn" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AUTH SIMULATION
+// ============================================================
+let currentUser = null;
+let pendingOTPCode = null;
+let pendingUserData = null;
+
+function initAuth() {
+  const saved = localStorage.getItem('theoryUser');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    updateNavUser();
+    showScreen('s-home');
+  } else {
+    showScreen('s-auth');
+  }
+}
+
+function updateNavUser() {
+  if (!currentUser) return;
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const el = document.getElementById('nav-avatar');
+  const nm = document.getElementById('nav-username');
+  if (el) el.textContent = initials;
+  if (nm) nm.textContent = currentUser.name.split(' ')[0];
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('form-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('register-error').style.display = 'none';
+}
+
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  document.getElementById('login-error').style.display = 'none';
+
+  if (!email || !pass) return showAuthError('login-error', 'נא למלא את כל השדות');
+
+  const users = JSON.parse(localStorage.getItem('theoryUsers') || '{}');
+  const user = users[email];
+
+  if (!user) return showAuthError('login-error', 'אימייל לא קיים במערכת');
+  if (user.pass !== btoa(pass)) return showAuthError('login-error', 'סיסמה שגויה');
+
+  currentUser = { name: user.name, email };
+  localStorage.setItem('theoryUser', JSON.stringify(currentUser));
+
+  // Load user's state
+  const userState = localStorage.getItem('theoryState_' + email);
+  if (userState) try { state = JSON.parse(userState); } catch {}
+
+  updateNavUser();
+  showScreen('s-home');
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  document.getElementById('register-error').style.display = 'none';
+
+  if (!name || !email || !pass || !pass2) return showAuthError('register-error', 'נא למלא את כל השדות');
+  if (pass.length < 6) return showAuthError('register-error', 'הסיסמה חייבת להכיל לפחות 6 תווים');
+  if (pass !== pass2) return showAuthError('register-error', 'הסיסמאות אינן תואמות');
+  if (!email.includes('@')) return showAuthError('register-error', 'אימייל לא תקין');
+
+  const users = JSON.parse(localStorage.getItem('theoryUsers') || '{}');
+  if (users[email]) return showAuthError('register-error', 'אימייל כבר רשום במערכת');
+
+  // Save pending and send OTP
+  pendingUserData = { name, email, pass: btoa(pass) };
+  pendingOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+  document.getElementById('otp-subtitle').textContent = `שלחנו קוד אימות ל-${email}`;
+  document.getElementById('otp-display').textContent = pendingOTPCode;
+  document.getElementById('otp-error').style.display = 'none';
+  for (let i=0; i<6; i++) document.getElementById('otp-'+i).value = '';
+  showScreen('s-otp');
+  setTimeout(() => document.getElementById('otp-0').focus(), 300);
+}
+
+function otpMove(idx) {
+  const val = document.getElementById('otp-'+idx).value;
+  if (val && idx < 5) document.getElementById('otp-'+(idx+1)).focus();
+  // Auto verify when all filled
+  const code = Array.from({length:6}, (_,i) => document.getElementById('otp-'+i).value).join('');
+  if (code.length === 6) verifyOTP();
+}
+
+function otpBack(e, idx) {
+  if (e.key === 'Backspace' && !document.getElementById('otp-'+idx).value && idx > 0) {
+    document.getElementById('otp-'+(idx-1)).focus();
+  }
+}
+
+function verifyOTP() {
+  const code = Array.from({length:6}, (_,i) => document.getElementById('otp-'+i).value).join('');
+  document.getElementById('otp-error').style.display = 'none';
+
+  if (code.length < 6) return;
+  if (code !== pendingOTPCode) {
+    document.getElementById('otp-error').textContent = 'קוד שגוי, נסה שוב';
+    document.getElementById('otp-error').style.display = 'block';
+    return;
+  }
+
+  // Save user
+  const users = JSON.parse(localStorage.getItem('theoryUsers') || '{}');
+  users[pendingUserData.email] = { name: pendingUserData.name, pass: pendingUserData.pass };
+  localStorage.setItem('theoryUsers', JSON.stringify(users));
+
+  currentUser = { name: pendingUserData.name, email: pendingUserData.email };
+  localStorage.setItem('theoryUser', JSON.stringify(currentUser));
+  pendingUserData = null; pendingOTPCode = null;
+
+  updateNavUser();
+  showScreen('s-home');
+}
+
+function resendOTP() {
+  pendingOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
+  document.getElementById('otp-display').textContent = pendingOTPCode;
+  document.getElementById('otp-success').style.display = 'block';
+}
+
+function doSocialLogin(provider) {
+  // Simulation – create a demo user
+  const demoName = provider === 'Google' ? 'משתמש Google' : 'משתמש GitHub';
+  const demoEmail = provider.toLowerCase() + '_demo@demo.com';
+  currentUser = { name: demoName, email: demoEmail, provider };
+  localStorage.setItem('theoryUser', JSON.stringify(currentUser));
+  updateNavUser();
+  showScreen('s-home');
+}
+
+function doLogout() {
+  // Save state per user before logout
+  if (currentUser) {
+    localStorage.setItem('theoryState_' + currentUser.email, JSON.stringify(state));
+  }
+  currentUser = null;
+  localStorage.removeItem('theoryUser');
+  // Reset state
+  state = { diagIdx:0, diagScore:0, diagAnswered:false, topicScores:{}, roadmap:[], currentTopicIdx:0, pracIdx:0, pracScore:0, pracAnswered:false, currentTopicKey:null, currentAIQuestion:null, history:[], totalSessions:0, totalCorrect:0, totalQuestions:0, activeDays:[] };
+  showScreen('s-auth');
+}
+
+// Override saveState to save per user
+const _origSave = saveState;
+function saveState() {
+  localStorage.setItem('theoryState2', JSON.stringify(state));
+  if (currentUser) localStorage.setItem('theoryState_' + currentUser.email, JSON.stringify(state));
+}
+
+// Start app
+initAuth();
+
+// ============================================================
+// EXAM
+// ============================================================
+let examState = {
+  mode: 'general', // 'general' or topic key
+  total: 30, questions: [], idx: 0, score: 0,
+  answered: false, currentQ: null,
+  topicResults: {}, wrongQuestions: [],
+  timeLeft: 0
+};
+let examTimerInterval = null;
+
+function showExitModal() {
+  const modal = document.getElementById('exit-modal');
+  modal.style.display = 'flex';
+}
+
+function closeExitModal() {
+  document.getElementById('exit-modal').style.display = 'none';
+}
+
+function confirmExitExam() {
+  closeExitModal();
+  clearInterval(examTimerInterval);
+  examTimerInterval = null;
+  loadExamMenu();
+  showScreen('s-exam-menu');
+}
+
+function exitExam() {
+  showExitModal();
+}
+
+function loadExamMenu() {
+  const list = document.getElementById('exam-topic-list');
+  list.innerHTML = '';
+  Object.entries(TOPICS).forEach(([key, t]) => {
+    const sc = state.topicScores[key];
+    const pct = sc ? Math.round(sc.correct/sc.total*100) : null;
+    const color = pct === null ? 'var(--muted)' : pct >= 70 ? 'var(--success)' : pct >= 40 ? 'var(--warning)' : 'var(--danger)';
+    const card = document.createElement('div');
+    card.className = 'exam-option-card';
+    card.onclick = () => startExam('topic', key);
+    card.innerHTML = `
+      <div class="exam-option-icon">${t.icon}</div>
+      <div class="exam-option-info">
+        <div class="exam-option-title">${t.name}</div>
+        <div class="exam-option-desc">10 שאלות · טיימר 15 דקות</div>
+      </div>
+      <div class="rm-badge ${pct !== null && pct < 60 ? 'need' : 'good'}" style="color:${color}">${pct !== null ? pct+'%' : 'חדש'}</div>`;
+    list.appendChild(card);
+  });
+}
+
+function startExam(mode, topicKey) {
+  examState = {
+    mode, topicKey,
+    total: mode === 'general' ? 30 : 10,
+    questions: [], idx: 0, score: 0,
+    answered: false, currentQ: null,
+    topicResults: {}, wrongQuestions: [],
+    timeLeft: mode === 'general' ? 40*60 : 15*60
+  };
+  showScreen('s-exam');
+  startExamTimer();
+  loadExamQuestion();
+}
+
+function startExamTimer() {
+  clearInterval(examTimerInterval);
+  updateTimerDisplay();
+  examTimerInterval = setInterval(() => {
+    examState.timeLeft--;
+    updateTimerDisplay();
+    if (examState.timeLeft <= 0) {
+      clearInterval(examTimerInterval);
+      showExamResults();
+    }
+    // Turn red when under 5 minutes
+    const el = document.getElementById('exam-timer');
+    if (examState.timeLeft < 300) el.style.color = 'var(--danger)';
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(examState.timeLeft / 60).toString().padStart(2,'0');
+  const s = (examState.timeLeft % 60).toString().padStart(2,'0');
+  document.getElementById('exam-timer').textContent = `${m}:${s}`;
+}
+
+async function loadExamQuestion() {
+  examState.answered = false;
+  const pct = (examState.idx / examState.total) * 100;
+  document.getElementById('exam-progress').style.width = pct + '%';
+  document.getElementById('exam-counter').textContent = `שאלה ${examState.idx+1} מתוך ${examState.total}`;
+  document.getElementById('exam-next').style.display = 'none';
+  document.getElementById('exam-loading').style.display = 'block';
+  document.getElementById('exam-q-wrap').style.display = 'none';
+
+  // Pick topic
+  let topicKey;
+  if (examState.mode === 'topic') {
+    topicKey = examState.topicKey;
+  } else {
+    const keys = Object.keys(TOPICS);
+    topicKey = keys[examState.idx % keys.length];
+  }
+
+  try {
+    const q = await generateAIQuestion(topicKey, 'medium');
+    q.topicKey = topicKey;
+    examState.currentQ = q;
+
+    document.getElementById('exam-topic-label').textContent = TOPICS[topicKey].name;
+    document.getElementById('exam-text').textContent = q.text;
+    document.getElementById('exam-loading').style.display = 'none';
+    document.getElementById('exam-q-wrap').style.display = 'block';
+    renderAnswers('exam-answers', q, selectExamAnswer);
+  } catch(e) {
+    document.getElementById('exam-loading').innerHTML = '<p style="color:var(--danger)">⚠️ שגיאה ביצירת שאלה</p>';
+  }
+}
+
+function selectExamAnswer(idx) {
+  if (examState.answered) return;
+  examState.answered = true;
+  const q = examState.currentQ;
+  markAnswers('exam-answers', idx, q.correct);
+
+  // Track topic results
+  const tk = q.topicKey;
+  if (!examState.topicResults[tk]) examState.topicResults[tk] = { correct:0, total:0 };
+  examState.topicResults[tk].total++;
+
+  if (idx === q.correct) {
+    examState.score++;
+    examState.topicResults[tk].correct++;
+  } else {
+    examState.wrongQuestions.push({ q, chosen: idx });
+  }
+  document.getElementById('exam-next').style.display = 'block';
+}
+
+function examNext() {
+  examState.idx++;
+  if (examState.idx >= examState.total) {
+    clearInterval(examTimerInterval);
+    showExamResults();
+  } else {
+    loadExamQuestion();
+  }
+}
+
+async function showExamResults() {
+  clearInterval(examTimerInterval);
+  const pct = Math.round((examState.score / examState.total) * 100);
+  const passed = pct >= 72; // passing grade in Israel
+
+  // Score ring
+  const circ = 339, offset = circ - (circ * pct / 100);
+  document.getElementById('exam-score-arc').style.strokeDashoffset = offset;
+  document.getElementById('exam-score-num').textContent = pct + '%';
+  document.getElementById('exam-result-title').textContent = passed ? '🎉 עברת את הבחינה!' : '📚 לא עברת הפעם';
+  document.getElementById('exam-result-sub').textContent = `${examState.score} מתוך ${examState.total} נכון (ציון עובר: 72%)`;
+
+  showScreen('s-exam-results');
+
+  // Topic breakdown
+  const breakdown = document.getElementById('exam-topics-breakdown');
+  breakdown.innerHTML = '<div style="font-size:13px;color:var(--muted);margin-bottom:0.75rem;font-weight:600">ביצועים לפי נושא</div>';
+  Object.entries(examState.topicResults).forEach(([key, data]) => {
+    const p = Math.round(data.correct/data.total*100);
+    const color = p>=70?'var(--success)':p>=40?'var(--warning)':'var(--danger)';
+    const row = document.createElement('div'); row.className='topic-row';
+    row.innerHTML=`<div class="topic-name">${TOPICS[key]?.icon||''} ${TOPICS[key]?.name||key}</div><div class="topic-bar-bg"><div class="topic-bar" style="width:${p}%;background:${color}"></div></div><div class="topic-pct" style="color:${color}">${p}%</div>`;
+    breakdown.appendChild(row);
+  });
+
+  // Wrong questions list
+  const wrongList = document.getElementById('exam-wrong-list');
+  wrongList.innerHTML = '';
+  if (examState.wrongQuestions.length === 0) {
+    wrongList.innerHTML = '<div style="color:var(--success);font-size:14px">✅ לא טעית באף שאלה!</div>';
+  } else {
+    examState.wrongQuestions.forEach(({q, chosen}) => {
+      const item = document.createElement('div'); item.className = 'exam-wrong-item';
+      item.innerHTML = `<div class="exam-wrong-q">❓ ${q.text}</div><div class="exam-wrong-yours">✗ ענית: ${q.answers[chosen]}</div><div class="exam-wrong-correct">✓ נכון: ${q.answers[q.correct]}</div>`;
+      wrongList.appendChild(item);
+    });
+  }
+
+  // AI Analysis
+  await getExamAIAnalysis(pct, examState.topicResults, examState.wrongQuestions, examState.mode, examState.topicKey);
+
+  // Save to history
+  logSession(examState.mode === 'general' ? 'בחינה כללית' : `בחינה: ${TOPICS[examState.topicKey]?.name}`, examState.score, examState.total);
+}
+
+async function getExamAIAnalysis(pct, topicResults, wrongQs, mode, topicKey) {
+  const el = document.getElementById('exam-ai-analysis');
+
+  const topicSummary = Object.entries(topicResults)
+    .map(([k,v]) => `${TOPICS[k]?.name}: ${Math.round(v.correct/v.total*100)}%`)
+    .join(', ');
+
+  const weakTopics = Object.entries(topicResults)
+    .filter(([k,v]) => v.correct/v.total < 0.6)
+    .map(([k]) => TOPICS[k]?.name).join(', ');
+
+  const wrongSample = wrongQs.slice(0,3).map(({q}) => q.text).join('; ');
+
+  const prompt = `אתה מנתח תוצאות בחינת תיאוריה נהיגה.
+ציון: ${pct}%
+ביצועים לפי נושא: ${topicSummary}
+נושאים חלשים: ${weakTopics || 'אין'}
+דוגמאות לשאלות שטעה: ${wrongSample || 'לא טעה'}
+
+תן ניתוח קצר ומועיל (3-4 משפטים) בעברית:
+1. הערכה כללית של הביצועים
+2. הנושאים שהכי צריך לשפר ולמה
+3. המלצה ספציפית אחת לשיפור
+
+היה ידידותי, ממוקד ומעשי.`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, messages:[{role:"user",content:prompt}] })
+    });
+    const data = await res.json();
+    el.textContent = data.content[0].text;
+  } catch {
+    el.textContent = weakTopics
+      ? `כדאי להתמקד בנושאים: ${weakTopics}. עבור למסלול הלימוד לחזרה ממוקדת.`
+      : 'תוצאות טובות! המשך לתרגל לשמירה על הרמה.';
+  }
+}
+
+// ============================================================
+// CHATBOT
+const BOOK_CONTEXT = `אתה מורה פרטי לתיאוריית נהיגה בישראל. אתה מתבסס על ספר הלימוד הרשמי ועל חוקי התעבורה הישראליים.
+
+תוכן הספר כולל את הנושאים הבאים:
+- נהג חדש: תקופת מלווה (6 חודשים עד גיל 24), 50 שעות ליווי (20 עירוני, 15 בין-עירוני, 15 לילה), הגבלת נוסעים (עד 2 נוסעים בשנתיים הראשונות), מגבלת אלכוהול (50 מיקרוגרם בלבד), עבירות חמורות גוררות חזרה לתיאוריה וטסט.
+- הדרך וחלקיה: כביש, שול דרך, נתיב, מדרכה, צומת, מחלף, רחוב משולב, שטח הפרדה, קווי הפרדה (רצוף=אסור לעבור, מקווקו=מותר לעקוף).
+- מהירויות: עירוני 50 קמ"ש, בין-עירוני 80/90 קמ"ש (עם הפרדה בנויה), דרך מהירה 110 קמ"ש.
+- תמרורים: משולש אדום=אזהרה, עיגול אדום=איסור, עיגול כחול=חובה, מרובע=מודיעין.
+- זכות קדימה: שוטר > רמזור > תמרור > חוק. ברחוב ראשי – עדיפות לראשי. ללא תמרורים – זכות קדימה לרכב מימין.
+- עקיפה: מותרת רק בקו מקווקו, אסורה בצומת/מעבר חציה/גבעה/עיקול/קו רציף/ליד רכב שעוצר.
+- חנייה: אסור ב-12 מ' מצומת, 6 מ' מהידרנט, על מדרכה, קו צהוב רצוף, מול כניסה.
+- תאורה: חובה להדליק רבע שעה אחרי שקיעה עד רבע שעה לפני זריחה. אור גבוה=100 מ', אור נמוך=30 מ'. לעמעם כשיש רכב ממול.
+- בטיחות: חגורה חובה לכולם. ילד עד שנה=מושב הפוך, עד 3=מושב בטיחות, עד 8=מושב מגביה.
+- אלכוהול: מגבלה לנהג רגיל=240 מיקרוגרם/ליטר אוויר. נהג חדש/צעיר/מקצועי=50 מיקרוגרם בלבד.
+- 6 עקרונות בטיחות: בולטות, התייחסות כוללת לסביבה, שוני ורב-גוניות, אי-ודאות וספקנות, מעטפת בטיחות, בריאות וכשירות.
+- רמזור: אדום=עצור, אדום+צהוב=התכונן, ירוק=נסע, ירוק מהבהב=התכונן לעצור, צהוב=פנה צומת, צהוב מהבהב=מקולקל נהג לפי תמרורים.
+- סימנים מעידים: לזהות בזמן אמת סכנות בדרך.
+- לחץ חברתי: נוסעים ברכב מעלים סיכון לתאונות. נהג חדש מוגבל ב-2 נוסעים.
+
+הנחיות לשיחה:
+- דבר בעברית בלבד, בצורה ידידותית וברורה
+- כשמשתמש מציין נושא חלש – שאל אותו שאלה ממוקדת מהנושא
+- אחרי כל תשובה – בדוק אם הבין ושאל שאלת המשך
+- תן משוב חיובי כשעונה נכון
+- כשטועה – הסבר בנחת מה הכלל הנכון לפי החוק
+- התאם את הרמה: אם טועה הרבה – הסבר יותר; אם מצליח – קשה יותר
+- שמור על שיחה קצרה וממוקדת (לא יותר מ-3 משפטים בכל הודעה)`;
+
+let chatOpen = false;
+let chatHistory = [];
+let chatWelcomed = false;
+let chatTyping = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-window').classList.toggle('open', chatOpen);
+  document.getElementById('chat-notif').style.display = chatOpen ? 'none' : '';
+  if (chatOpen && !chatWelcomed) {
+    chatWelcomed = true;
+    setTimeout(() => {
+      addBotMessage('שלום! 👋 אני המורה AI שלך לתיאוריה.\n\nאני מתבסס על ספר התיאוריה הרשמי ויכול לעזור לך בכל נושא.\n\nבאיזה נושא תרצה להתחזק?');
+      showQuickReplies(['תמרורים', 'עקיפה', 'מהירות', 'זכות קדימה', 'חנייה', 'נהג חדש']);
+    }, 400);
+  }
+  if (chatOpen) document.getElementById('chat-input').focus();
+}
+
+function addBotMessage(text) {
+  const msgs = document.getElementById('chat-messages');
+  // Remove typing indicator if exists
+  const typing = document.getElementById('chat-typing');
+  if (typing) typing.remove();
+
+  const msg = document.createElement('div');
+  msg.className = 'msg bot';
+  const time = new Date().toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+  msg.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${time}</div>`;
+  msgs.appendChild(msg);
+  msgs.scrollTop = msgs.scrollHeight;
+  chatTyping = false;
+  document.getElementById('chat-send-btn').disabled = false;
+}
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('chat-messages');
+  const msg = document.createElement('div');
+  msg.className = 'msg user';
+  const time = new Date().toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'});
+  msg.innerHTML = `<div class="msg-bubble">${text}</div><div class="msg-time">${time}</div>`;
+  msgs.appendChild(msg);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const existing = document.getElementById('chat-typing');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'msg bot'; t.id = 'chat-typing';
+  t.innerHTML = `<div class="msg-bubble" style="padding:8px 14px"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(t);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showQuickReplies(options) {
+  const qr = document.getElementById('quick-replies');
+  qr.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-btn';
+    btn.textContent = opt;
+    btn.onclick = () => { qr.innerHTML=''; sendChatMessage(opt); };
+    qr.appendChild(btn);
+  });
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || chatTyping) return;
+  input.value = '';
+  input.style.height = 'auto';
+  sendChatMessage(text);
+}
+
+async function sendChatMessage(text) {
+  if (chatTyping) return;
+  chatTyping = true;
+  document.getElementById('chat-send-btn').disabled = true;
+  document.getElementById('quick-replies').innerHTML = '';
+
+  addUserMessage(text);
+  chatHistory.push({ role: 'user', content: text });
+
+  showTyping();
+
+  // Build user profile context
+  const topicInfo = state.topicScores ? Object.entries(state.topicScores).map(([k,v]) =>
+    `${TOPICS[k]?.name}: ${Math.round(v.correct/v.total*100)}%`).join(', ') : '';
+  const userContext = topicInfo ? `\n\nפרופיל המשתמש: ${topicInfo}` : '';
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: BOOK_CONTEXT + userContext,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const reply = data.content[0].text;
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // Keep history max 20 messages
+    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+
+    addBotMessage(reply);
+
+    // Show contextual quick replies based on reply content
+    const lower = reply.toLowerCase();
+    if (lower.includes('נושא') || lower.includes('תחום')) {
+      showQuickReplies(['תמרורים', 'עקיפה', 'מהירות', 'זכות קדימה', 'חנייה', 'נהג חדש']);
+    } else if (lower.includes('שאלה') || lower.includes('?')) {
+      showQuickReplies(['נכון', 'לא בטוח', 'הסבר שוב', 'שאלה אחרת']);
+    }
+
+  } catch (e) {
+    addBotMessage('מצטער, הייתה שגיאה. בדוק חיבור לאינטרנט ונסה שוב.');
+    chatTyping = false;
+    document.getElementById('chat-send-btn').disabled = false;
+  }
+}
+
+// Auto-resize textarea
+document.getElementById('chat-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+});
+</script>
+</body>
+</html>
