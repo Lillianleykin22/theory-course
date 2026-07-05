@@ -75,7 +75,7 @@ cd theory-course
 ```
 
 או גש לקישור הישיר:
-**[https://[username].github.io/theory-course/theory-course.html]()**
+הhttps://lillianleykin22.github.io/theory-course/theory-course.html
 
 ---
 
