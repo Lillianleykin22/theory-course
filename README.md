@@ -69,7 +69,7 @@
 האתר הוא קובץ HTML יחיד – אין צורך בהתקנה:
 
 ```bash
-git clone https://github.com/[username]/theory-course.git
+git clone https://github.com/lillianleykin22/theory-course.git
 cd theory-course
 # פתח את theory-course.html בדפדפן
 ```
